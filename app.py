@@ -8,7 +8,7 @@ import os
 from PIL import Image
 import leafmap.foliumap as leafmap
 import geopandas as gpd
-import datetime 
+import datetime
 from sentinelhub import SHConfig, SentinelHubRequest, MimeType, DataCollection, Geometry
 from sentinelhub import Geometry, CRS
 import matplotlib.pyplot as plt
@@ -26,23 +26,23 @@ from sentinelhub import (
 
 
 # Load your CSV data containing polygons and information
-csv_file_path = 'all_together.csv'
+csv_file_path = "all_together.csv"
 data = pd.read_csv(csv_file_path)
-data['geometry'] = data['WKT'].apply(wkt_loads)
+data["geometry"] = data["WKT"].apply(wkt_loads)
 gdf = gpd.GeoDataFrame(data)
 # Filter out rows with empty geometries
-gdf = gdf[~gdf['geometry'].is_empty]
+gdf = gdf[~gdf["geometry"].is_empty]
 
-if 'selected_polygon' not in st.session_state:
-    st.session_state['selected_polygon'] = None
+if "selected_polygon" not in st.session_state:
+    st.session_state["selected_polygon"] = None
 
 
 # Create a Streamlit web app
-st.title('Agri-Watch Report : Executive Summary')
+st.title("Agri-Watch Report : Executive Summary")
 
 
 polygon_labels = [i + 1 for i in gdf.index]
-selected_polygon_label = st.sidebar.selectbox('Select a Polygon', polygon_labels)
+selected_polygon_label = st.sidebar.selectbox("Select a Polygon", polygon_labels)
 
 resolution = 60
 betsiboka_coords_wgs84 = (46.16, -16.15, 46.51, -15.58)
@@ -55,25 +55,30 @@ betsiboka_size = bbox_to_dimensions(betsiboka_bbox, resolution=resolution)
 
 config = SHConfig()
 
-config.instance_id = '7c65dff9-a0e0-40a9-889c-31947b4465e5'
-config.sh_client_id = '0f8fe328-6a58-4210-bad0-4dc7886dfeef'
-config.sh_client_secret = '5PxoFxGgWimanpy1SOtiXwLNX0sgezOC'
+config.instance_id = "2c736e9d-43a4-4f1d-9a11-1e62dee4d2f5"
+config.sh_client_id = "4e3ba2ec-07c9-46dd-bab9-ec7fbebda7b8"
+config.sh_client_secret = "3Rv60E7Ip0qPLvt17e7vsqomjrXReAt0"
 
 
-output_csv_path = 'output.csv'
+output_csv_path = "output.csv"
 output_data = pd.read_csv(output_csv_path)
 
+
 def style_data(df):
-    return df.style.set_properties(**{
-        'background-color': 'black',
-        'color': 'lime',
-        'font-size' : '50pt',
-        'font-weight': 'bold',
-        'border-color': 'white'
-    })
+    return df.style.set_properties(
+        **{
+            "background-color": "black",
+            "color": "lime",
+            "font-size": "50pt",
+            "font-weight": "bold",
+            "border-color": "white",
+        }
+    )
+
 
 def calculate_ndvi(red, nir):
     return (nir - red) / (nir + red)
+
 
 def fetch_sentinel_imagery(geometry, start_date, end_date, size):
     # You can modify this evalscript to fetch the desired imagery
@@ -98,7 +103,7 @@ def fetch_sentinel_imagery(geometry, start_date, end_date, size):
                 time_interval=(start_date, end_date),
             )
         ],
-        responses=[SentinelHubRequest.output_response('default', MimeType.PNG)],
+        responses=[SentinelHubRequest.output_response("default", MimeType.PNG)],
         geometry=geometry,
         size=size,
         config=config,
@@ -106,6 +111,7 @@ def fetch_sentinel_imagery(geometry, start_date, end_date, size):
 
     response = request_rgb.get_data()
     return response[0] if response else None
+
 
 evalscript_all_bands = """
     //VERSION=3
@@ -125,10 +131,11 @@ evalscript_all_bands = """
         return [sample.B01, sample.B02, sample.B03, sample.B04, sample.B05, sample.B06, sample.B07, sample.B08, sample.B8A, sample.B09, sample.B10, sample.B11, sample.B12];
     }
 """
+
+
 def get_polygon_bounds(geometry):
     minx, miny, maxx, maxy = geometry.bounds
     return [[miny, minx], [maxy, maxx]]
-
 
 
 def fetch_dem_imagery(geometry, start_date, end_date, size):
@@ -187,7 +194,7 @@ function evaluatePixel(sample) {
                 time_interval=(start_date, end_date),
             )
         ],
-        responses=[SentinelHubRequest.output_response('default', MimeType.PNG)],
+        responses=[SentinelHubRequest.output_response("default", MimeType.PNG)],
         geometry=geometry,
         config=config,
     )
@@ -223,14 +230,12 @@ else:
 selected_polygon_data = gdf.loc[selected_polygon]
 
 # Validate and potentially correct the selected polygon's geometry
-valid_geometry = validate_and_correct_geometry(selected_polygon_data['geometry'])
-
+valid_geometry = validate_and_correct_geometry(selected_polygon_data["geometry"])
 
 
 # Filter the GeoDataFrame to get the selected polygon
 
 # Validate and potentially correct the selected polygon's geometry
-
 
 
 new_polygon = valid_geometry
@@ -242,8 +247,6 @@ betsiboka_coords_wgs84 = (46.16, -16.15, 46.51, -15.58)
 
 betsiboka_bbox = BBox(bbox=betsiboka_coords_wgs84, crs=CRS.WGS84)
 betsiboka_size = bbox_to_dimensions(betsiboka_bbox, resolution=resolution)
-
-
 
 
 # Update the request to use the selected dates
@@ -260,7 +263,6 @@ request_all_bands = SentinelHubRequest(
     size=betsiboka_size,
     config=config,
 )
-
 
 
 evalscript_true_color = """
@@ -297,14 +299,17 @@ request_true_color = SentinelHubRequest(
     config=config,
 )
 
+
 def style_dataframe(df):
     return df.style.set_properties(
         **{
-            'font-size': '25pt',  # Increase font size (adjust as needed)
-            'font-weight': 'bold' # Make font bold
+            "font-size": "25pt",  # Increase font size (adjust as needed)
+            "font-weight": "bold",  # Make font bold
         }
     ).applymap(
-        lambda x: 'color: green;' if x is True else ('color: red;' if x is False else '')
+        lambda x: (
+            "color: green;" if x is True else ("color: red;" if x is False else "")
+        )
     )
 
 
@@ -314,36 +319,44 @@ def split_dataframe(df):
     df2 = df.iloc[half_point:]  # Second half
     return df1, df2
 
+
 # Check if the geometry is valid
 if not valid_geometry.is_valid:
     st.warning("Selected polygon has an invalid geometry and cannot be displayed.")
 else:
 
-    high_res_folder = 'high_res'  # Replace with the path to your high_res folder
-    image_path = os.path.join(high_res_folder, f'{selected_polygon + 1}.png')  # Assuming polygon index starts from 0
+    high_res_folder = "high_res"  # Replace with the path to your high_res folder
+    image_path = os.path.join(
+        high_res_folder, f"{selected_polygon + 1}.png"
+    )  # Assuming polygon index starts from 0
 
     if os.path.exists(image_path):
-        st.image(Image.open(image_path), caption=f'High-Resolution Image for Polygon {selected_polygon + 1}', use_column_width=True)
+        st.image(
+            Image.open(image_path),
+            caption=f"High-Resolution Image for Polygon {selected_polygon + 1}",
+            use_column_width=True,
+        )
     else:
         st.error(f"High-resolution image not found for Polygon {selected_polygon}")
 
     bounds = get_polygon_bounds(valid_geometry)
     center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2]
-    m = leafmap.Map(center=center, zoom_start=12, basemap='SATELLITE')
+    m = leafmap.Map(center=center, zoom_start=12, basemap="SATELLITE")
     # folium.TileLayer('https://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     #                  attr='Esri',
     #                  name='Esri WorldImagery',
     #                  control=False).add_to(m)
 
     m.fit_bounds(bounds)
-    selected_polygon_output_data = output_data[output_data['poly'] == selected_polygon + 1]
+    selected_polygon_output_data = output_data[
+        output_data["poly"] == selected_polygon + 1
+    ]
 
-# Display the data for the selected polygon
+    # Display the data for the selected polygon
 
-# Display the data for the selected polygon in a four-column layout
+    # Display the data for the selected polygon in a four-column layout
     if not selected_polygon_output_data.empty:
         st.write(f"Data for Polygon {selected_polygon + 1}:")
-
 
         # Splitting the DataFrame into two sub-DataFrames
         df1, df2 = split_dataframe(selected_polygon_output_data.transpose())
@@ -362,29 +375,30 @@ else:
     geo_json = folium.GeoJson(
         data=valid_geometry.__geo_interface__,
         style_function=lambda x: {
-            'fillColor': 'blue',
-            'color': 'blue',
-            'weight': 2,
-            'fillOpacity': 0  # Adjust this value for desired transparency
-        }
+            "fillColor": "blue",
+            "color": "blue",
+            "weight": 2,
+            "fillOpacity": 0,  # Adjust this value for desired transparency
+        },
     )
     geo_json.add_to(m)
 
     # Add marker
-    folium.Marker([valid_geometry.centroid.y, valid_geometry.centroid.x], tooltip=f'Polygon {selected_polygon}').add_to(m)
+    folium.Marker(
+        [valid_geometry.centroid.y, valid_geometry.centroid.x],
+        tooltip=f"Polygon {selected_polygon}",
+    ).add_to(m)
 
     # Sentinel Imagery
-
 
     folium_static(m)
 
 if valid_dates:
 
-    if st.sidebar.button('Submit'):
+    if st.sidebar.button("Submit"):
 
         # Retrieve data for all bands
         all_bands_imgs = request_all_bands.get_data()
-
 
         # Calculate NDVI
         red_band = all_bands_imgs[0][:, :, 3]
@@ -393,9 +407,11 @@ if valid_dates:
 
         # Display NDVI plot
         plt.figure()
-        plt.imshow(ndvi, cmap='RdYlGn', aspect="auto")
-        plt.title(f"NDVI ({start_date.strftime('%B')} to {end_date.strftime('%B')} {start_date.year})")
-        plt.axis('off')
+        plt.imshow(ndvi, cmap="RdYlGn", aspect="auto")
+        plt.title(
+            f"NDVI ({start_date.strftime('%B')} to {end_date.strftime('%B')} {start_date.year})"
+        )
+        plt.axis("off")
         plt.show()
 
         # Display NDVI plot in Streamlit
@@ -408,23 +424,29 @@ if valid_dates:
             image = true_color_imgs[0]
             plt.figure()
             plt.imshow(image * 3.5 / 255, aspect="auto")
-            plt.axis('off')
+            plt.axis("off")
             plt.title("True Color Imagery")
             st.pyplot(plt)
         else:
-            st.warning("No true color imagery available for the selected polygon and time range.")
+            st.warning(
+                "No true color imagery available for the selected polygon and time range."
+            )
 
-        dem_image = fetch_dem_imagery(new_polygon_sentinel, start_date_str, end_date_str, betsiboka_size)
+        dem_image = fetch_dem_imagery(
+            new_polygon_sentinel, start_date_str, end_date_str, betsiboka_size
+        )
         if dem_image is not None:
             st.write("DEM Topographic Visualization:")
             plt.figure()
             plt.imshow(dem_image)
-            plt.axis('off')
+            plt.axis("off")
             plt.show()
             st.pyplot(plt)
         else:
-            st.warning("No DEM imagery available for the selected polygon and time range.")
+            st.warning(
+                "No DEM imagery available for the selected polygon and time range."
+            )
 
 
-logo_path = 'logo.png'  # Replace with the path to your logo file
+logo_path = "logo.png"  # Replace with the path to your logo file
 st.sidebar.image(logo_path, use_column_width=True)
