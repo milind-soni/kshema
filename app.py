@@ -12,6 +12,8 @@ import datetime
 from sentinelhub import SHConfig, SentinelHubRequest, MimeType, DataCollection, Geometry
 from sentinelhub import Geometry, CRS
 import matplotlib.pyplot as plt
+import csv
+
 from sentinelhub import (
     CRS,
     BBox,
@@ -62,6 +64,15 @@ config.sh_client_secret = "3Rv60E7Ip0qPLvt17e7vsqomjrXReAt0"
 
 output_csv_path = "output.csv"
 output_data = pd.read_csv(output_csv_path)
+
+
+def get_score_from_csv(polygon_number):
+    with open("score.csv", "r") as file:
+        csv_reader = csv.DictReader(file)
+        for row in csv_reader:
+            if int(row["Polygon"]) == polygon_number:
+                return float(row["Final Score for Settlement"])
+    return None
 
 
 def style_data(df):
@@ -361,6 +372,18 @@ else:
     # Display the data for the selected polygon in a four-column layout
     if not selected_polygon_output_data.empty:
         st.write(f"Data for Polygon {selected_polygon + 1}:")
+
+        # Get the score from the CSV file
+        score = get_score_from_csv(selected_polygon + 1)
+
+        if score is not None:
+            score_color = "green" if score >= 500 else "red"
+            st.markdown(
+                f"<h2 style='text-align: center; color: {score_color};'>Final Score for Settlement: {score:.2f} / 700</h2>",
+                unsafe_allow_html=True,
+            )
+        else:
+            st.warning(f"No score found for Polygon {selected_polygon + 1}")
 
         # Splitting the DataFrame into two sub-DataFrames
         df1, df2 = split_dataframe(selected_polygon_output_data.transpose())
