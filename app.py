@@ -342,10 +342,14 @@ else:
     bounds = get_polygon_bounds(valid_geometry)
     center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2]
     m = leafmap.Map(center=center, zoom_start=12, basemap="SATELLITE")
-    # folium.TileLayer('https://{s}.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    #                  attr='Esri',
-    #                  name='Esri WorldImagery',
-    #                  control=False).add_to(m)
+
+    folium.TileLayer(
+        tiles="http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}",
+        attr="Google",
+        name="Google Satellite",
+        overlay=False,
+        control=True,
+    ).add_to(m)
 
     m.fit_bounds(bounds)
     selected_polygon_output_data = output_data[
