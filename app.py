@@ -352,7 +352,7 @@ else:
 
     bounds = get_polygon_bounds(valid_geometry)
     center = [(bounds[0][0] + bounds[1][0]) / 2, (bounds[0][1] + bounds[1][1]) / 2]
-    m = leafmap.Map(center=center, zoom_start=8, basemap="SATELLITE")
+    m = leafmap.Map(center=center, zoom_start=6, basemap="SATELLITE")
 
     folium.TileLayer(
         tiles="http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}",
